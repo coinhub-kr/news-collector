@@ -12,13 +12,7 @@ target_news_path = "C:\\git_local\\topic_collector_docker\\topic_channel\\coinde
 global_config_file_path = "C:\\git_local\\topic_collector_docker\\config.json";
 // [debug] end
 
-const SERVER = {
-  STATE: {
-    STOP:0,
-    RUNNING:1,
-    PREPARE:2
-  }
-};
+
 var collect_server = {
   state: SERVER.STATE.STOP,
   prepare: function(){
