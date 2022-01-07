@@ -24,7 +24,7 @@ var collect_server = {
   },
   stop: function(){
     collect_server.state = SERVER.STATE.STOP;
-  }
+  },
 };
 
 collect_server.prepare();
