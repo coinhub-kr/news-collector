@@ -1,7 +1,13 @@
-var Server = require('./Server');
+const Server = require('./Server');
 
+/**
+ *  test
+ */
 class ServerManager {
-  constructor(){
-    
+  /**
+   * make server manager
+   */
+  constructor() {
+    // do something
   }
 }

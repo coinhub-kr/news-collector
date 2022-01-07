@@ -1,35 +1,35 @@
 // server state
-var STOP = 0;
-var RUNNING = 0;
-var PREPARE = 0;
+const STOP = 0;
+const RUNNING = 1;
+const PREPARE = 2;
 
 const SERVER = {
   STATE: {
     STOP,
     RUNNING,
-    PREPARE
+    PREPARE,
   },
   VALID_STATE_TRANSITION: {
     STOP: [PREPARE],
     RUNNING: [STOP],
-    PREPARE: [STOP, RUNNING]
+    PREPARE: [STOP, RUNNING],
   },
   WARN_STATE_TRANSITION: {
     STOP: {
       STOP: {
-        message: "The server is stopped already."
-      }
+        message: 'The server is stopped already.',
+      },
     },
     RUNNING: {
       RUNNING: {
-        message: "The server is running already."
-      }
+        message: 'The server is running already.',
+      },
     },
     PREPARE: [{
       next_state: PREPARE,
-      message: "The server is preparing already."
-    }]
-  }
+      message: 'The server is preparing already.',
+    }],
+  },
 };
 
 module.exports = SERVER;
