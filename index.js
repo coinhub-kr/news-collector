@@ -3,6 +3,7 @@ const puppeteer = require('puppeteer');
 
 const process = require('process');
 const fs = require('fs');
+const Collector = require('./server/Collector');
 
 var target_news_path = process.argv[2]; // todo: make this const
 var global_config_file_path = process.argv[3]; // todo: make this const
@@ -123,59 +124,21 @@ async function start_to_collect(nc_json){
   
   for(var nc_url_json of nc_json.urls) {
     if(nc_url_json.use){
-      handle_news_url(nc_url_json);
+      handleNewsUrl(nc_url_json);
     }
   }
 }
 
-async function parseElementValue(page, identifier, base_element, evaluationFunction = function(element){
-  return element => element.textContent ? element.textContent : undefined
-}){
-  var target_element = await headless_browser_manager.resolve_element_identifier(page, identifier, base_element);
-  return await target_element.evaluate(evaluationFunction);
-}
 
-async function handle_news_url(nc_url_json){
-  var current_url = nc_url_json.url;
+
+async function handleNewsUrl(ncURLJson){
+  var currentURL = ncURLJson.url;
 
   // todo: check the page is exist yet.
   // no redirection is allowed
   
-
-  var page = await headless_browser_manager.create_new_page(current_url);
-
-  var news_item_list = await headless_browser_manager.resolve_element_identifier(nc_url_json.news_item_list_identifier);
-
-  // todo: use promise technic, all() method
-  var getting_value_list = [];
-  var name_list = [];
-  for(var news_item_elem of news_item_list){
-    for(var target_data of nc_url_json.target) {
-      if(target_data.use){
-        getting_value_list.push(await parseElementValue(page, target_data.identifier, news_item_elem));
-        name_list.push(target_data.name);
-
-        //console.log(target_value);
-        if(target_value){
-          // result_json[target_data.name] = target_value;
-          
-        } else {
-          // todo: warning: no value on the element
-        }
-      }
-    }
-  }
-  // Promise.all(getting_value_list)
-  //   .then(p_list => {
-      
-  //   })
-  
-  for(var i=0;i<getting_value_list.length;i++) {
-    console.log(`${name_list[i]} - ${getting_value_list[i]}`);
-  }
-  console.log("");
-  
-  // return result_json;
+  var collector = new Collector('', 1, 1, ncURLJson);
+  collector.start();
 }
 
 var collect_timer;
