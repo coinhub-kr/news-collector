@@ -5,30 +5,30 @@ const process = require('process');
 const fs = require('fs');
 const Collector = require('./server/Collector');
 
-var target_news_path = process.argv[2]; // todo: make this const
-var global_config_file_path = process.argv[3]; // todo: make this const
+var targetNewsPath = process.argv[2]; // todo: make this const
+var globalConfigFilePath = process.argv[3]; // todo: make this const
 
 // [debug]
-target_news_path = "C:\\git_local\\topic_collector_docker\\topic_channel\\coindeskkorea.json";
-global_config_file_path = "C:\\git_local\\topic_collector_docker\\config.json";
+targetNewsPath = "D:\\project\\topic_collector_docker\\topic_channel\\coindeskkorea.json";
+globalConfigFilePath = "D:\\project\\topic_collector_docker\\config.json";
 // [debug] end
 
 
-var collect_server = {
-  state: SERVER.STATE.STOP,
-  prepare: function(){
-    collect_server.state = SERVER.STATE.PREPARE;
-  },
-  run: async function(){
-    collect_server.state = SERVER.STATE.RUNNING;
-    await headless_browser_manager.init();
-  },
-  stop: function(){
-    collect_server.state = SERVER.STATE.STOP;
-  },
-};
+// var collect_server = {
+//   state: SERVER.STATE.STOP,
+//   prepare: function(){
+//     collect_server.state = SERVER.STATE.PREPARE;
+//   },
+//   run: async function(){
+//     collect_server.state = SERVER.STATE.RUNNING;
+//     await headless_browser_manager.init();
+//   },
+//   stop: function(){
+//     collect_server.state = SERVER.STATE.STOP;
+//   },
+// };
 
-collect_server.prepare();
+// collect_server.prepare();
 
 /**
  * Coding convention
@@ -49,70 +49,14 @@ collect_server.prepare();
  *   
  * }
  */
-const news_info_file_content = fs.readFileSync(target_news_path, 'utf8');
-const news_info = JSON.parse(news_info_file_content);
+const newsInfoFileContent = fs.readFileSync(targetNewsPath, 'utf8');
+const newsInfo = JSON.parse(newsInfoFileContent);
 
 /**
  * 
  */
-const global_config_file_content = fs.readFileSync(global_config_file_path, 'utf8');
-const global_config = JSON.parse(global_config_file_content);
-
-// todo: Check the json validation with examining type
-
-var headless_browser_manager = {
-  browser: undefined,
-  init: async function(){
-    headless_browser_manager.browser = await puppeteer.launch();
-  },
-  terminate: async function(){
-    headless_browser_manager.browser.close();
-  },
-  create_new_page: async function(url, goto_option={
-    timeout: 0,
-    waitUntil: ['domcontentloaded']
-  }){
-    var page = await headless_browser_manager.browser.newPage();
-
-    // go to url
-    await page.goto(url, goto_option);
-
-    return page;
-  },
-  __resolve_identifier: async function(page, identifier, base_element = page.document){
-    // todo: determine priorities (xpath, selector)
-      
-    if(identifier.xpath) {
-      // todo: error control
-      element = await page.$x(identifier);
-    }
-    if(identifier.selector){
-
-    }
-  },
-  resolve_element_identifier: async function (page, identifier, base_element = undefined){
-    // relative path
-    if(base_element !== undefined){
-
-    } else {
-      var element = undefined;
-      
-      return element;
-    }
-  }
-};
-
-// const target_url = "https://www.coindeskkorea.com/";
-
-// puppeteer.launch()
-//   .then((browser) => {
-//     return browser.newPage()
-//       .then((page) => {
-//         return page.goto('https://github.com/')
-//           .then(() => page.screenshot({path: 'github.png'}))
-//       })
-//       .then(() => browser.close());
-//   });
+const globalConfigFileContent = fs.readFileSync(globalConfigFilePath, 'utf8');
+const globalConfig = JSON.parse(globalConfigFileContent);
 
 /**
  * 
@@ -131,28 +75,32 @@ async function start_to_collect(nc_json){
 
 
 
-async function handleNewsUrl(ncURLJson){
-  var currentURL = ncURLJson.url;
+async function handleNewsURL(newsInfo){
+  var currentURL = newsInfo.url;
+
+  // todo: URL filtering
 
   // todo: check the page is exist yet.
   // no redirection is allowed
   
-  var collector = new Collector('', 1, 1, ncURLJson);
+  var collector = new Collector(newsInfo);
   collector.start();
 }
 
-var collect_timer;
-function collectingTimerHandler(){
-  start_to_collect(news_info);
+// todo: collecting timer
+// var collect_timer;
+// function collectingTimerHandler(){
+//   start_to_collect(newsInfo);
 
-  if(collect_server.state !== SERVER.STATE.STOP) {
-    collect_timer = setTimeout(collectingTimerHandler, global_config.interval * 100);
-  }
-}
+//   if(collect_server.state !== SERVER.STATE.STOP) {
+//     collect_timer = setTimeout(collectingTimerHandler, globalConfig.interval * 100);
+//   }
+// }
 
-if(news_info.use) {
-  collect_server.run();
-  collect_timer = setTimeout(collectingTimerHandler, global_config.interval * 100);
+if(newsInfo.use) {
+  handleNewsURL(newsInfo);
+  // collect_server.run();
+  // collect_timer = setTimeout(collectingTimerHandler, globalConfig.interval * 100);
 } else {
   // nothing to do
 }

@@ -11,9 +11,6 @@ const ParserPuppeteer = require('./Parser').ParserPuppeteer;
  * !! single page
  */
 class Collector {
-  #name
-  #ip
-  #port
   #browser
   #page
   #state
@@ -22,86 +19,60 @@ class Collector {
 
   #parser
 
+
+  // private functions
+  #isValidStateTransition
+
   /**
    * 
-   * @param {*} name 
-   * @param {*} ip 
-   * @param {*} port 
    */
-  constructor(name, ip, port, newsInfo) {
-    this.#name = name;
-    this.#ip = ip;
-    this.#port = port;
+  constructor(newsInfo) {
     this.#newsInfo = newsInfo;
     
     this.#browser = new HeadlessBrowserManager();
-    this.#page = await this.#browser.moveURL(this.#newsInfo.url);
+    // this.#page = this.#browser.moveURL(this.#newsInfo.url);
 
     this.#state = SERVER_CONST.STATE.STOP;
 
     this.#parser = new ParserPuppeteer(); // todo: make this as singleton ??
+
+    /**
+     * 
+     * @param {*} next_state 
+     * @returns 
+     */
+    this.#isValidStateTransition = function(nextState) {
+      var current_state = this.#state;
+      if(SERVER_CONST.VALID_STATE_TRANSITION[this.#state].hasOwnProperty(nextState)) {
+        return true;
+      } else if (SERVER_CONST.WARN_STATE_TRANSITION) {
+
+      }
+    }
   }
   
-  /**
-   * 
-   * @returns 
-   */
-  getName() {
-    return this.#name;
-  }
-
-  /**
-   * 
-   * @returns 
-   */
-  getIp() {
-    return this.#ip;
-  }
-
-  /**
-   * 
-   * @returns 
-   */
-  getPort() {
-    return this.#port;
-  }
-
   // todo:
-  /**
-   * 
-   * @param {*} next_state 
-   * @returns 
-   */
-  #isValidStateTransition(next_state) {
-    var current_state = this.#state;
-    if(SERVER_CONST.VALID_STATE_TRANSITION[this.#state].hasOwnProperty(next_state)) {
-      return true;
-    } else if (SERVER_CONST.WARN_STATE_TRANSITION) {
+  
 
-    }
-  }
+  async startSingle(urlInfo){
+    console.log(urlInfo);
 
-  start(){
-    if(!#isValidStateTransition(next_state)) {
-      // todo: handle an error
-      return;
-    }
-    this.#state = SERVER_CONST.STATE.RUNNING;
-    var newsItemList = await this.#parser.resolveElementIdentifier(ncURLJson.newsItemListIdentifier);
+    this.#page = await this.#browser.moveURL(urlInfo.url);
+    var newsItemList = await this.#parser.resolveElementIdentifier(this.#page, urlInfo.newsItemListIdentifier);
 
     // todo: use promise technic, all() method
     var gettingValueList = [];
     var nameList = [];
-    for(var newsItemElem of newsItemList){
-      for(var targetData of ncURLJson.target) {
-        if(targetData.use){
-          var targetValue = await this.#parser.parseElementValue(page, targetData.identifier, newsItemElem);
+    for(var newsItemElem of newsItemList) {
+      for(var targetData of urlInfo.target) {
+        if(targetData.use) {
+          var targetValue = await this.#parser.parseElementValue(this.#page, targetData.identifier, newsItemElem);
           
           gettingValueList.push(targetValue);
           nameList.push(targetData.name);
 
-          if(targetValue){
-            console.log(targetValue);
+          if(targetValue) {
+            console.log(targetData.name + ':' + targetValue);
             // result_json[target_data.name] = target_value;
             
           } else {
@@ -110,6 +81,21 @@ class Collector {
         }
       }
     }
+  }
+
+  async start(){
+    // todo: changing a collector state
+    // if(!#isValidStateTransition(nextState)) {
+    //   // todo: handle an error
+    //   return;
+    // }
+
+    this.#state = SERVER_CONST.STATE.RUNNING;
+
+    for(var urlInfo of this.#newsInfo.urls) {
+      this.startSingle(urlInfo);
+    }
+    
     // Promise.all(getting_value_list)
     //   .then(p_list => {
         
@@ -122,21 +108,20 @@ class Collector {
     // console.log("");
     
   }
-  stop() {
-    if(#isValidStateTransition(next_state)) {
-      this.#state = SERVER_CONST.STATE.STOP;
-    } else {
-      // todo: handle an error
-    }
+  async stop() {
+    // if(this.#isValidStateTransition(next_state)) {
+    //   this.#state = SERVER_CONST.STATE.STOP;
+    // } else {
+    //   // todo: handle an error
+    // }
   }
 
 }
 
-const puppeteer = require('puppeteer');
 class HeadlessBrowserManager {
   #browser
   constructor(){
-    this.browser = await puppeteer.launch();
+    this.#browser = undefined;
   }
   async terminate(){
     browser.close();
@@ -146,7 +131,11 @@ class HeadlessBrowserManager {
     timeout: 0,
     waitUntil: ['domcontentloaded']
   }) {
-    var page = await headless_browser_manager.browser.newPage();
+    if(this.#browser === undefined) {
+      this.#browser = await puppeteer.launch();
+    }
+
+    var page = await this.#browser.newPage();
 
     // go to url
     await page.goto(url, opt);

@@ -14,28 +14,32 @@ class Parser {
 class ParserPuppeteer extends Parser {
 
     async parseElementValue(page, identifier, baseElement, evaluationFunction = function(element){
-        return element => element.textContent ? element.textContent : undefined
+        return element.textContent ? element.textContent : undefined
     }){
         var targetElement = await this.resolveElementIdentifier(page, identifier, baseElement);
-        return await targetElement.evaluate(evaluationFunction);
+        // console.log(targetElement[0]);
+        return await targetElement[0].evaluate(evaluationFunction);
     }
 
     async resolveElementIdentifier(page, identifier, baseElement = undefined) {
         var element = undefined;
+        var searchContext = page;
+        if(baseElement !== undefined) {
+            searchContext = baseElement;
+        }
+        
         if(identifier.xpath) {
-            element = await page.$x(identifier.xpath);
+            element = await searchContext.$x(identifier.xpath);
         }
 
         if(element === undefined && identifier.selector) {
-            // todo: selector
+            element = await searchContext.$$(identifier.selector);
         }
 
         return element;
     }
     
 }
-
-
 
 module.exports = {
     Parser,
