@@ -5,58 +5,71 @@ const validUrl = require('valid-url');
  * Decorator pattern
  */
 class URLFilter {
-    isValid(suspect){
-        return validUrl.isUri(suspect);
-    }
-}
-
-class URLFilterItem {
-    constructor(nextFilter, filtering = function(suspect) {}){
-        this.nextFilter = nextFilter;
-        this.filtering = filtering;
-    }
-
-    processing(suspect){
-        
-    }
-}
-
-
-class URLFilterDecorator {
     #nextFilter
-    processing(suspect){ }
-    #doNextFilter(suspect, results){
-        if(this.nextFilter) {
-            results.push(this.nextFilter.filtering(suspect));
+
+    constructor(nextFilter) {
+        this.#nextFilter = nextFilter;
+    }
+    
+    async filtering(suspect) {
+        var result = true;
+        if(this.#nextFilter) {
+            result = await this.#nextFilter.filtering(suspect);
         }
+        return result;
     }
 
-    buildFilteringResults(){
-        return true;
-    }
-}
-
-class URLAliveFilterDecorator extends URLFilterDecorator {
-    buildFilteringResults(){
-        
-    }
-}
-
-
-
-///////////////////////////////
-
-class URLFilter {
-    filtering(suspect){ }
 }
 
 const http = require('http');
 class URLAliveFilter extends URLFilter {
-    filtering(suspect) { // override
-        const options = {method: 'HEAD', host: 'stackoverflow.com', port: 80, path: '/'};
-        const req = http.request(options, function(r) {
-            console.log(JSON.stringify(r.headers));
-        });
-        req.end();
+    async filtering(suspect) { // override
+        var result = await super.filtering(suspect);
+        if(result){
+            console.log('test' + result);
+            const options = {method: 'HEAD', host: suspect, port: 80, path: '/'};
+            try {
+                const req = await http.request(options, function(r) {
+                    //console.log(JSON.stringify(r.headers));
+                });
+                await req.end();
+            } catch(e){
+                result = false;
+                console.log('test' + result);
+            }
+
+            // todo: result
+        }
+        return result;
     }
 }
+
+class URLValidationFilter extends URLFilter {
+    constructor(nextFilter) {
+        super(nextFilter);
+    }
+
+    async filtering(suspect) {
+        var result = await super.filtering(suspect);
+        if(result){
+            result = await validUrl.isUri(suspect);
+            if(result === undefined) {
+                result = false;
+            } else {
+                result = true;
+            }
+        }
+        return result;
+    }
+}
+
+(async () => {
+    var urlFilter = new URLAliveFilter(
+        new URLValidationFilter()
+    );
+    
+    var result = await urlFilter.filtering('http://anb.anb');
+    console.log("result");
+    console.log(result);
+})();
+
