@@ -36,16 +36,17 @@ var testData = {
 //     }
 // });
 var newsCollection = db.collection('news');
-newsCollection.findOneAndUpdate(
-    testData, /* query */
-    {$set: testData}, /* update */
-    { upsert: true}, function(error, data){
-        if(error) {
-            console.log(error);
-        } else {
-            console.log('save');
-        }
-    });
+// newsCollection.findOneAndUpdate(
+//     testData, /* query */
+//     {$set: testData}, /* update */
+//     { upsert: true}, function(error, data){
+//         if(error) {
+//             console.log(error);
+//         } else {
+//             console.log('save');
+//         }
+//     });
+
 //console.log(db.collection('news'));
 //var newsCollection db.
 class NewsTopicDatabase {
@@ -54,8 +55,8 @@ class NewsTopicDatabase {
         for(var newsItem of parsedNewsList) {
             newsCollection.findOneAndUpdate(
                 newsItem, 
-                {$set: newsItem},
-                { upsert: true}, // avoid duplication
+                { $set: newsItem },
+                { upsert: true }, // avoid duplication
                 function(error, data){ // TODO: error control
                     if(error) {
                         console.log(error);
@@ -68,3 +69,5 @@ class NewsTopicDatabase {
     }
 
 }
+
+module.exports.NewsTopicDatabase = NewsTopicDatabase;

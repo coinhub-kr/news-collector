@@ -1,7 +1,7 @@
 const SERVER_CONST = require('./constant');
 const puppeteer = require('puppeteer');
 const ParserPuppeteer = require('./Parser').ParserPuppeteer;
-
+const NewsTopicDatabase = require('./NewsTopicDatabase').NewsTopicDatabase;
 
 /**
  * State Transition Diagram
@@ -64,23 +64,36 @@ class Collector {
     var gettingValueList = [];
     var nameList = [];
     for(var newsItemElem of newsItemList) {
+      var newsData = {};
       for(var targetData of urlInfo.target) {
         if(targetData.use) {
-          var targetValue = await this.#parser.parseElementValue(this.#page, targetData.identifier, newsItemElem);
-          
-          gettingValueList.push(targetValue);
-          nameList.push(targetData.name);
-
-          if(targetValue) {
-            console.log(targetData.name + ':' + targetValue);
-            // result_json[target_data.name] = target_value;
-            
+          if(targetData.name === "link") {
+            newsData[targetData.name] = await this.#parser.parseElementValue(this.#page, targetData.identifier, newsItemElem, (element) => {
+              return element.href;
+            });
           } else {
-            // todo: warning: no value on the element
+            var targetValue = await this.#parser.parseElementValue(this.#page, targetData.identifier, newsItemElem);
+          
+            // gettingValueList.push(targetValue);
+            nameList.push(targetData.name);
+            
+            if(targetValue) {
+              newsData[targetData.name] = targetValue;
+              console.log(targetData.name + ':' + targetValue);
+              // result_json[target_data.name] = target_value;
+              
+            } else {
+              // todo: warning: no value on the element
+            }
           }
         }
       }
+      gettingValueList.push(newsData);
     }
+
+    //console.log(gettingValueList);
+    var newsTopicDatabase = new NewsTopicDatabase();
+    newsTopicDatabase.save(gettingValueList);
   }
 
   async start(){

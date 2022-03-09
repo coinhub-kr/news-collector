@@ -9,8 +9,8 @@ var targetNewsPath = process.argv[2]; // todo: make this const
 var globalConfigFilePath = process.argv[3]; // todo: make this const
 
 // [debug]
-targetNewsPath = "D:\\project\\topic_collector_docker\\topic_channel\\coindeskkorea.json";
-globalConfigFilePath = "D:\\project\\topic_collector_docker\\config.json";
+targetNewsPath = "C:\\git_local\\topic_collector_docker\\topic_channel\\coindeskkorea.json";
+globalConfigFilePath = "C:\\git_local\\topic_collector_docker\\config.json";
 // [debug] end
 
 
