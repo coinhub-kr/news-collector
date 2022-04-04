@@ -17,7 +17,6 @@ class ParserPuppeteer extends Parser {
         return element.textContent ? element.textContent : undefined
     }){
         var targetElement = await this.resolveElementIdentifier(page, identifier, baseElement);
-        // console.log(targetElement[0]);
         return await targetElement[0].evaluate(evaluationFunction);
     }
 
@@ -32,7 +31,7 @@ class ParserPuppeteer extends Parser {
             element = await searchContext.$x(identifier.xpath);
         }
 
-        if(element === undefined && identifier.selector) {
+        if((element === undefined || element.length === 0) && identifier.selector) {
             element = await searchContext.$$(identifier.selector);
         }
 

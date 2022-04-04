@@ -66,6 +66,7 @@ class Collector {
     for(var newsItemElem of newsItemList) {
       var newsData = {};
       for(var targetData of urlInfo.target) {
+        console.log(targetData);
         if(targetData.use) {
           if(targetData.name === "link") {
             newsData[targetData.name] = await this.#parser.parseElementValue(this.#page, targetData.identifier, newsItemElem, (element) => {
