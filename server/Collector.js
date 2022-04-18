@@ -34,7 +34,7 @@ class Collector {
 
     this.#state = SERVER_CONST.STATE.STOP;
 
-    this.#parser = new ParserPuppeteer(); // todo: make this as singleton ??
+    this.#parser = new ParserPuppeteer();
 
     /**
      * 
@@ -42,7 +42,6 @@ class Collector {
      * @returns 
      */
     this.#isValidStateTransition = function(nextState) {
-      var current_state = this.#state;
       if(SERVER_CONST.VALID_STATE_TRANSITION[this.#state].hasOwnProperty(nextState)) {
         return true;
       } else if (SERVER_CONST.WARN_STATE_TRANSITION) {
@@ -51,22 +50,25 @@ class Collector {
     }
   }
   
+  getStatus() {
+    return this.#state;
+  }
+
   // todo:
   
-
+  /**
+   * 
+   * @param {*} urlInfo 
+   */
   async startSingle(urlInfo){
-    console.log(urlInfo);
-
     this.#page = await this.#browser.moveURL(urlInfo.url);
     var newsItemList = await this.#parser.resolveElementIdentifier(this.#page, urlInfo.newsItemListIdentifier);
 
-    // todo: use promise technic, all() method
     var gettingValueList = [];
     var nameList = [];
     for(var newsItemElem of newsItemList) {
       var newsData = {};
       for(var targetData of urlInfo.target) {
-        console.log(targetData);
         if(targetData.use) {
           if(targetData.name === "link") {
             newsData[targetData.name] = await this.#parser.parseElementValue(this.#page, targetData.identifier, newsItemElem, (element) => {
@@ -75,14 +77,10 @@ class Collector {
           } else {
             var targetValue = await this.#parser.parseElementValue(this.#page, targetData.identifier, newsItemElem);
           
-            // gettingValueList.push(targetValue);
             nameList.push(targetData.name);
             
             if(targetValue) {
               newsData[targetData.name] = targetValue;
-              console.log(targetData.name + ':' + targetValue);
-              // result_json[target_data.name] = target_value;
-              
             } else {
               // todo: warning: no value on the element
             }
@@ -91,43 +89,35 @@ class Collector {
       }
       gettingValueList.push(newsData);
     }
+    // todo add log
 
-    //console.log(gettingValueList);
     var newsTopicDatabase = new NewsTopicDatabase();
     newsTopicDatabase.save(gettingValueList);
   }
 
   async start(){
-    // todo: changing a collector state
-    // if(!#isValidStateTransition(nextState)) {
-    //   // todo: handle an error
-    //   return;
-    // }
+    if(!this.#isValidStateTransition(nextState)) {
+      // todo: handle an error
+      // todo: add error log
+      return;
+    }
 
     this.#state = SERVER_CONST.STATE.RUNNING;
 
     for(var urlInfo of this.#newsInfo.urls) {
-      this.startSingle(urlInfo);
+      await this.startSingle(urlInfo);
     }
-    
-    // Promise.all(getting_value_list)
-    //   .then(p_list => {
-        
-    //   })
-    
-    // [DEBUG]
-    // for(var i=0;i<gettingValueList.length;i++) {
-    //   console.log(`${nameList[i]} - ${gettingValueList[i]}`);
-    // }
-    // console.log("");
-    
+
+    this.#state = SERVER_CONST.STATE.STOP;
   }
+
   async stop() {
-    // if(this.#isValidStateTransition(next_state)) {
-    //   this.#state = SERVER_CONST.STATE.STOP;
-    // } else {
-    //   // todo: handle an error
-    // }
+    if(this.#isValidStateTransition(next_state)) {
+      // todo: handle an error
+      // todo: add error log
+      return;
+    }
+    this.#state = SERVER_CONST.STATE.STOP;
   }
 
 }

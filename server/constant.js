@@ -8,6 +8,7 @@ const SERVER = {
     STOP,
     RUNNING,
     PREPARE,
+    EXIT
   },
   VALID_STATE_TRANSITION: {
     STOP: [PREPARE],

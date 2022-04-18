@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer');
 const process = require('process');
 const fs = require('fs');
 const Collector = require('./server/Collector');
+const SERVER_CONST = require('./server/constant');
 
 var targetNewsPath = process.argv[2]; // todo: make this const
 var globalConfigFilePath = process.argv[3]; // todo: make this const
@@ -12,23 +13,6 @@ var globalConfigFilePath = process.argv[3]; // todo: make this const
 targetNewsPath = "C:\\git_local\\topic_collector_docker\\topic_channel\\coindeskkorea.json";
 globalConfigFilePath = "C:\\git_local\\topic_collector_docker\\config.json";
 // [debug] end
-
-
-// var collect_server = {
-//   state: SERVER.STATE.STOP,
-//   prepare: function(){
-//     collect_server.state = SERVER.STATE.PREPARE;
-//   },
-//   run: async function(){
-//     collect_server.state = SERVER.STATE.RUNNING;
-//     await headless_browser_manager.init();
-//   },
-//   stop: function(){
-//     collect_server.state = SERVER.STATE.STOP;
-//   },
-// };
-
-// collect_server.prepare();
 
 /**
  * Coding convention
@@ -57,52 +41,42 @@ const newsInfo = JSON.parse(newsInfoFileContent);
  */
 const globalConfigFileContent = fs.readFileSync(globalConfigFilePath, 'utf8');
 const globalConfig = JSON.parse(globalConfigFileContent);
-
-/**
- * 
- * @param {JSON} nc_json a json data of a news channel 
- * @returns 
- */
-async function start_to_collect(nc_json){
-  var channel_name = nc_json.name;
-  
-  for(var nc_url_json of nc_json.urls) {
-    if(nc_url_json.use){
-      handleNewsUrl(nc_url_json);
-    }
-  }
-}
-
-
+var collector = undefined;
+var collectorIntervalId = undefined;
 
 async function handleNewsURL(newsInfo){
-  var currentURL = newsInfo.url;
+  // todo add log
 
-  // todo: URL filtering
+  // todo read server status
+  if(collector !== undefined && collector.getStatus() === SERVER_CONST.STATE.EXIT) {
+    clearInterval(collectorIntervalId);
+  }
 
-  // todo: check the page is exist yet.
   // no redirection is allowed
+  if(collector === undefined) {
+    collector = new Collector(newsInfo);
+  }
   
-  var collector = new Collector(newsInfo);
   collector.start();
 }
 
-// todo: collecting timer
-// var collect_timer;
-// function collectingTimerHandler(){
-//   start_to_collect(newsInfo);
-
-//   if(collect_server.state !== SERVER.STATE.STOP) {
-//     collect_timer = setTimeout(collectingTimerHandler, globalConfig.interval * 100);
-//   }
-// }
-
 if(newsInfo.use) {
-  handleNewsURL(newsInfo);
-  // collect_server.run();
-  // collect_timer = setTimeout(collectingTimerHandler, globalConfig.interval * 100);
+  // todo: (validation) URL filtering
+  // todo: (validation) check the page is exist yet.
+
+  var dataValidate = true;
+
+  if(dataValidate) {
+    collectorIntervalId = setInterval(() => {
+      handleNewsURL(newsInfo);
+    }, globalConfig.collector.interval);
+  } else {
+
+  }  
 } else {
-  // nothing to do
+  // todo: error log
 }
+
+
 
 // wait till server end...
