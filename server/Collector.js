@@ -5,23 +5,19 @@ const NewsTopicDatabase = require('./NewsTopicDatabase').NewsTopicDatabase;
 
 /**
  * State Transition Diagram
- * 1. Start -> Stop
- * 2. Stop -> Start
+ * @see https://www.notion.so/Collector-life-cycle-dfa375a928e942428a0d6e19189cf4ed
  * 
- * !! single page
  */
 class Collector {
   #browser
   #page
   #state
+  #lastError
 
   #newsInfo
 
   #parser
 
-
-  // private functions
-  #isValidStateTransition
 
   /**
    * 
@@ -32,29 +28,16 @@ class Collector {
     this.#browser = new HeadlessBrowserManager();
     // this.#page = this.#browser.moveURL(this.#newsInfo.url);
 
-    this.#state = SERVER_CONST.STATE.STOP;
+    this.#state = SERVER_CONST.STATE.SLEEP;
 
     this.#parser = new ParserPuppeteer();
 
-    /**
-     * 
-     * @param {*} next_state 
-     * @returns 
-     */
-    this.#isValidStateTransition = function(nextState) {
-      if(SERVER_CONST.VALID_STATE_TRANSITION[this.#state].hasOwnProperty(nextState)) {
-        return true;
-      } else if (SERVER_CONST.WARN_STATE_TRANSITION) {
-
-      }
-    }
+    this.lastError = undefined;
   }
   
   getStatus() {
     return this.#state;
   }
-
-  // todo:
   
   /**
    * 
@@ -96,28 +79,29 @@ class Collector {
   }
 
   async start(){
-    if(!this.#isValidStateTransition(nextState)) {
+    if(!this.#state === SERVER_CONST.STATE.ERROR) {
       // todo: handle an error
       // todo: add error log
       return;
     }
 
-    this.#state = SERVER_CONST.STATE.RUNNING;
+    this.#state = SERVER_CONST.STATE.COLLECTING;
 
     for(var urlInfo of this.#newsInfo.urls) {
       await this.startSingle(urlInfo);
     }
 
-    this.#state = SERVER_CONST.STATE.STOP;
+    this.stop();
   }
 
   async stop() {
-    if(this.#isValidStateTransition(next_state)) {
+    if(this.#state === SERVER_CONST.STATE.ERROR) {
       // todo: handle an error
       // todo: add error log
+      // todo: do some manual handling
       return;
     }
-    this.#state = SERVER_CONST.STATE.STOP;
+    this.#state = SERVER_CONST.STATE.SLEEP;
   }
 
 }
