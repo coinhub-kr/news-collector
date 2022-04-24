@@ -3,6 +3,8 @@ const puppeteer = require('puppeteer');
 const ParserPuppeteer = require('./Parser').ParserPuppeteer;
 const NewsTopicDatabase = require('./NewsTopicDatabase').NewsTopicDatabase;
 
+const Logger = require('../Logger');
+
 /**
  * State Transition Diagram
  * @see https://www.notion.so/Collector-life-cycle-dfa375a928e942428a0d6e19189cf4ed
@@ -44,11 +46,15 @@ class Collector {
    * @param {*} urlInfo 
    */
   async startSingle(urlInfo){
+    Logger.info(`Access to ${urlInfo.url}.`);
+
     this.#page = await this.#browser.moveURL(urlInfo.url);
     var newsItemList = await this.#parser.resolveElementIdentifier(this.#page, urlInfo.newsItemListIdentifier);
-
+    
     var gettingValueList = [];
     var nameList = [];
+
+    Logger.info(`${urlInfo.newsChannelName}: Found ${newsItemList.length} item(s).`);
     for(var newsItemElem of newsItemList) {
       var newsData = {};
       for(var targetData of urlInfo.target) {
@@ -70,9 +76,11 @@ class Collector {
           }
         }
       }
+      Logger.info(`${urlInfo.url}: Parsed ${newsData['headline']}.`);
       gettingValueList.push(newsData);
     }
-    // todo add log
+    
+    Logger.info(`${urlInfo.url}: Save ${gettingValueList.length} item(s) to DB.`);
 
     var newsTopicDatabase = new NewsTopicDatabase();
     newsTopicDatabase.save(gettingValueList);

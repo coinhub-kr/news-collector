@@ -1,13 +1,15 @@
 // server state
-const STOP = 0;
-const RUNNING = 1;
-const PREPARE = 2;
+const SLEEP = 0;
+const COLLECTING = 1;
+const ERROR = 2;
+const EXIT = 3;
 
 const SERVER = {
   STATE: {
     SLEEP,
     COLLECTING,
-    ERROR
+    ERROR,
+    EXIT
   }
 };
 

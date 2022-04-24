@@ -6,11 +6,15 @@ const fs = require('fs');
 const Collector = require('./server/Collector');
 const SERVER_CONST = require('./server/constant');
 
+const Logger = require('./Logger');
+const { LOG_TYPE } = require('./Logger');
+
 var targetNewsPath = process.argv[2]; // todo: make this const
 var globalConfigFilePath = process.argv[3]; // todo: make this const
 
 // [debug]
 targetNewsPath = "C:\\git_local\\topic_collector_docker\\topic_channel\\coindeskkorea.json";
+targetNewsPath = "C:\\git_local\\topic_collector_docker\\topic_channel\\kr_investing_com.json";
 globalConfigFilePath = "C:\\git_local\\topic_collector_docker\\config.json";
 // [debug] end
 
@@ -45,12 +49,11 @@ var collector = undefined;
 var collectorIntervalId = undefined;
 
 async function handleNewsURL(newsInfo){
-  // todo add log
-
-  // todo read server status
   if(collector !== undefined && collector.getStatus() === SERVER_CONST.STATE.EXIT) {
     clearInterval(collectorIntervalId);
   }
+
+  Logger.info(`Collecting news from ${newsInfo.newsChannelName}`);
 
   // no redirection is allowed
   if(collector === undefined) {
@@ -67,16 +70,14 @@ if(newsInfo.use) {
   var dataValidate = true;
 
   if(dataValidate) {
+    Logger.info(`Eanble to collect from ${newsInfo.newsChannelName}`);
+    
     collectorIntervalId = setInterval(() => {
       handleNewsURL(newsInfo);
     }, globalConfig.collector.interval);
   } else {
 
-  }  
+  }
 } else {
-  // todo: error log
+  Logger.info("No news exist to be collected.");
 }
-
-
-
-// wait till server end...
