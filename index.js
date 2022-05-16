@@ -48,6 +48,26 @@ const globalConfig = JSON.parse(globalConfigFileContent);
 var collector = undefined;
 var collectorIntervalId = undefined;
 
+function main(newsInfo){
+  Logger.setLogPath(globalConfig.log.path);
+
+  if(newsInfo.use) {
+    var dataValidate = true;
+  
+    if(dataValidate) {
+      Logger.info(`Eanble to collect from ${newsInfo.newsChannelName}`);
+      
+      collectorIntervalId = setInterval(() => {
+        handleNewsURL(newsInfo);
+      }, globalConfig.collector.interval);
+    } else {
+  
+    }
+  } else {
+    Logger.info("No news exist to be collected.");
+  }
+}
+
 async function handleNewsURL(newsInfo){
   if(collector !== undefined && collector.getStatus() === SERVER_CONST.STATE.EXIT) {
     clearInterval(collectorIntervalId);
@@ -63,21 +83,4 @@ async function handleNewsURL(newsInfo){
   collector.start();
 }
 
-if(newsInfo.use) {
-  // todo: (validation) URL filtering
-  // todo: (validation) check the page is exist yet.
-
-  var dataValidate = true;
-
-  if(dataValidate) {
-    Logger.info(`Eanble to collect from ${newsInfo.newsChannelName}`);
-    
-    collectorIntervalId = setInterval(() => {
-      handleNewsURL(newsInfo);
-    }, globalConfig.collector.interval);
-  } else {
-
-  }
-} else {
-  Logger.info("No news exist to be collected.");
-}
+main(newsInfo);

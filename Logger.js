@@ -1,30 +1,34 @@
-var LOG_TYPE = {
-    DEBUG: "DEBUG",
-    INFO: "INFO",
-    ERROR: "ERROR"
-}
+const fs = require('fs');
+const LOG_TYPE = {
+    DEBUG: "debug",
+    INFO: "info",
+    ERROR: "error"
+};
 
-function log(log_type, message){
-    // var timestamp = +new Date;
-    var timestamp = new Date().toISOString();
+var Logger = {
+    logPath: undefined,
+    setLogPath: function(path){
+        Logger.logPath = path;
+    },
+    log: function(logType, message){
+        var timestamp = new Date().toISOString();
+    
+        var log_content = `${timestamp} [${logType}] ${message}`;
 
-    var log_content = `${timestamp} [${log_type}] ${message}`;
+        if(Logger.logPath !== undefined) {
+            fs.appendFile(Logger.logPath, log_content);
+        }
+        console.log(log_content);
+    },    
+    debug: function(message){
+        Logger.log(LOG_TYPE.DEBUG, message);
+    },
+    info: function(message){
+        Logger.log(LOG_TYPE.INFO, message);
+    },
+    error: function(message){
+        Logger.log(LOG_TYPE.ERROR, message);
+    }
+};
 
-    console.log(log_content);
-}
-
-function debug(message){
-    log(LOG_TYPE.DEBUG, message);
-}
-function info(message){
-    log(LOG_TYPE.INFO, message);
-}
-function error(message){
-    log(LOG_TYPE.ERROR, message);
-}
-
-module.exports = {
-    debug,
-    info,
-    error
-}
+module.exports = Logger;

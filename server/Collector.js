@@ -41,14 +41,36 @@ class Collector {
     return this.#state;
   }
   
+  #validURL(str) {
+    var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+      '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+      '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+      '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+    return !!pattern.test(str);
+  }
+
   /**
    * 
    * @param {*} urlInfo 
+   * 
+   * @returns {boolean} succeed or not
    */
   async startSingle(urlInfo){
-    Logger.info(`Access to ${urlInfo.url}.`);
+    if(!this.#validURL(urlInfo.url)) {
+      Logger.error(`Found invalid url('${urlInfo.url}').`);
+      return false;
+    }
 
+    Logger.info(`Access to ${urlInfo.url}.`);
     this.#page = await this.#browser.moveURL(urlInfo.url);
+    var response = Promise.resolve(this.#page);
+    if(!response.ok()){
+      Logger.error(`The url('${urlInfo.url}') seems not to exist anymore.`);
+      return false;
+    }
+
     var newsItemList = await this.#parser.resolveElementIdentifier(this.#page, urlInfo.newsItemListIdentifier);
     
     var gettingValueList = [];
@@ -84,6 +106,8 @@ class Collector {
 
     var newsTopicDatabase = new NewsTopicDatabase();
     newsTopicDatabase.save(gettingValueList);
+
+    return true;
   }
 
   async start(){
