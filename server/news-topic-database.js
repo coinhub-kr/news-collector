@@ -1,29 +1,30 @@
-var Logger = require('../logger');
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/test');
+const Logger = require('../env/logger');
 
-var db = mongoose.connection;
+// console.log(global);
+mongoose.connect(`mongodb://${global.config.mongodb.host}:${global.config.mongodb.port}/${global.config.mongodb.cluster}`);
 
-db.on('error', function(){
-    Logger.error(`Fail to connect to database.`);
-});
-db.once('open', function() {
-    Logger.info(`Connected to database.`);
-});
-/**
- * MongoDB
- */
-var newsSchema = mongoose.Schema({
-    title : 'string',
-    summary : 'string',
-    date : 'date'
-});
+var mongodb = undefined;
+var newsCollection = undefined;
 
-var newsCollection = db.collection('news');
+var DatabaseManager = {
+    connect: function(){
+        mongodb = mongoose.connection;
 
-class NewsTopicDatabase {
-    
+        mongodb.on('error', function(){
+            Logger.error(`Fail to connect to database.`);
+        });
+        mongodb.once('open', function() {
+            Logger.info(`Connected to database.`);
+            newsCollection = mongodb.collection('news');
+        });
+    },
     save(parsedNewsList = []){
+        if(newsCollection === undefined) {
+            Logger.error('You cannot save news items until connecting database.');
+            return false;
+        }
+
         var savedCount = 0;
         for(var newsItem of parsedNewsList) {
             newsCollection.findOneAndUpdate(
@@ -70,7 +71,9 @@ class NewsTopicDatabase {
                 }
             );
         }
+
+        return true;
     }
 }
 
-module.exports.NewsTopicDatabase = NewsTopicDatabase;
+module.exports = DatabaseManager;

@@ -4,20 +4,24 @@ const puppeteer = require('puppeteer');
 
 const process = require('process');
 const fs = require('fs');
-const Collector = require('./server/Collector');
-const SERVER_CONST = require('./server/constant');
 
-const Logger = require('./logger');
-const { LOG_TYPE } = require('./logger');
+const Logger = require('./env/logger');
+const ConfigManager = require('./env/config');
 
 var targetNewsPath = process.argv[2]; // todo: make this const
-var globalConfigFilePath = process.argv[3]; // todo: make this const
+const CONFIG_FILE_PATH = "./conf/config.json";
 
 // [debug]
-targetNewsPath = "C:\\git_local\\topic_collector_docker\\topic_channel\\coindeskkorea.json";
-targetNewsPath = "C:\\git_local\\topic_collector_docker\\topic_channel\\kr_investing_com.json";
-globalConfigFilePath = "C:\\git_local\\topic_collector_docker\\config.json";
+targetNewsPath = "./topic-channel/coindeskkorea.json";
+targetNewsPath = "./topic-channel/kr_investing_com.json";
 // [debug] end
+
+// load config file
+if(!ConfigManager.load(CONFIG_FILE_PATH)) {
+  process.exit(0);
+}
+global.config = ConfigManager.config;
+global.Logger = Logger;
 
 /**
  * Coding convention
@@ -40,16 +44,14 @@ globalConfigFilePath = "C:\\git_local\\topic_collector_docker\\config.json";
  */
 const newsInfo = JSON.parse(fs.readFileSync(targetNewsPath, 'utf8'));
 
-/**
- * 
- */
-const globalConfigFileContent = fs.readFileSync(globalConfigFilePath, 'utf8');
-const globalConfig = JSON.parse(globalConfigFileContent);
-var collector = new Collector();;
+const Collector = require('./server/collector');
+const SERVER_CONST = require('./server/constant');
+
+var collector = new Collector();
 var collectorIntervalId = undefined;
 
 function main(newsInfo){
-  Logger.setLogPath(globalConfig.log.path);
+  Logger.setLogPath(config.log.path);
 
   if(newsInfo.use) {
     Logger.info(`Target channel: ${newsInfo.newsChannelName}`);
@@ -62,7 +64,7 @@ function main(newsInfo){
       }
       
       collector.start();
-    }, globalConfig.collector.interval);
+    }, config.collector.interval);
   } else {
     Logger.info("No news exist to be collected.");
   }
