@@ -37,50 +37,34 @@ globalConfigFilePath = "C:\\git_local\\topic_collector_docker\\config.json";
  *   
  * }
  */
-const newsInfoFileContent = fs.readFileSync(targetNewsPath, 'utf8');
-const newsInfo = JSON.parse(newsInfoFileContent);
+const newsInfo = JSON.parse(fs.readFileSync(targetNewsPath, 'utf8'));
 
 /**
  * 
  */
 const globalConfigFileContent = fs.readFileSync(globalConfigFilePath, 'utf8');
 const globalConfig = JSON.parse(globalConfigFileContent);
-var collector = undefined;
+var collector = new Collector();;
 var collectorIntervalId = undefined;
 
 function main(newsInfo){
   Logger.setLogPath(globalConfig.log.path);
 
   if(newsInfo.use) {
-    var dataValidate = true;
-  
-    if(dataValidate) {
-      Logger.info(`Eanble to collect from ${newsInfo.newsChannelName}`);
+    Logger.info(`Target channel: ${newsInfo.newsChannelName}`);
+    
+    collector.setNewsInfo(newsInfo);
+
+    collectorIntervalId = setInterval(() => {
+      if(collector !== undefined) {
+        clearInterval(collectorIntervalId);
+      }
       
-      collectorIntervalId = setInterval(() => {
-        handleNewsURL(newsInfo);
-      }, globalConfig.collector.interval);
-    } else {
-  
-    }
+      collector.start();
+    }, globalConfig.collector.interval);
   } else {
     Logger.info("No news exist to be collected.");
   }
-}
-
-async function handleNewsURL(newsInfo){
-  if(collector !== undefined && collector.getStatus() === SERVER_CONST.STATE.EXIT) {
-    clearInterval(collectorIntervalId);
-  }
-
-  Logger.info(`Collecting news from ${newsInfo.newsChannelName}`);
-
-  // no redirection is allowed
-  if(collector === undefined) {
-    collector = new Collector(newsInfo);
-  }
-  
-  collector.start();
 }
 
 main(newsInfo);

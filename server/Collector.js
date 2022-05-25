@@ -5,42 +5,32 @@ const NewsTopicDatabase = require('./NewsTopicDatabase').NewsTopicDatabase;
 
 const Logger = require('../Logger');
 
-/**
- * State Transition Diagram
- * @see https://www.notion.so/Collector-life-cycle-dfa375a928e942428a0d6e19189cf4ed
- * 
- */
 class Collector {
-  #browser
-  #page
-  #state
-  #lastError
+  #browser  
+  #currentPage
 
   #newsInfo
-
   #parser
 
-
+  #lastError
   /**
    * 
    */
-  constructor(newsInfo) {
-    this.#newsInfo = newsInfo;
+  constructor() {
+    this.#newsInfo = undefined;
+    this.#currentPage = undefined;
     
-    this.#browser = new HeadlessBrowserManager();
-    // this.#page = this.#browser.moveURL(this.#newsInfo.url);
-
-    this.#state = SERVER_CONST.STATE.SLEEP;
+    this.#browser = await puppeteer.launch();
 
     this.#parser = new ParserPuppeteer();
 
     this.lastError = undefined;
   }
-  
-  getStatus() {
-    return this.#state;
+
+  setNewsInfo(newsInfo) {
+    this.#newsInfo = newsInfo;
   }
-  
+    
   #validURL(str) {
     var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
       '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
@@ -64,14 +54,22 @@ class Collector {
     }
 
     Logger.info(`Access to ${urlInfo.url}.`);
-    this.#page = await this.#browser.moveURL(urlInfo.url);
-    var response = Promise.resolve(this.#page);
+
+    this.#currentPage = await this.#browser.newPage();
+
+    // go to url
+    await this.#currentPage.goto(urlInfo.url, {
+      timeout: 0,
+      waitUntil: ['domcontentloaded']
+    });
+
+    var response = Promise.resolve(this.#currentPage);
     if(!response.ok()){
       Logger.error(`The url('${urlInfo.url}') seems not to exist anymore.`);
       return false;
     }
 
-    var newsItemList = await this.#parser.resolveElementIdentifier(this.#page, urlInfo.newsItemListIdentifier);
+    var newsItemList = await this.#parser.resolveElementIdentifier(this.#currentPage, urlInfo.newsItemListIdentifier);
     
     var gettingValueList = [];
     var nameList = [];
@@ -82,11 +80,11 @@ class Collector {
       for(var targetData of urlInfo.target) {
         if(targetData.use) {
           if(targetData.name === "link") {
-            newsData[targetData.name] = await this.#parser.parseElementValue(this.#page, targetData.identifier, newsItemElem, (element) => {
+            newsData[targetData.name] = await this.#parser.parseElementValue(this.#currentPage, targetData.identifier, newsItemElem, (element) => {
               return element.href;
             });
           } else {
-            var targetValue = await this.#parser.parseElementValue(this.#page, targetData.identifier, newsItemElem);
+            var targetValue = await this.#parser.parseElementValue(this.#currentPage, targetData.identifier, newsItemElem);
           
             nameList.push(targetData.name);
             
@@ -111,13 +109,10 @@ class Collector {
   }
 
   async start(){
-    if(!this.#state === SERVER_CONST.STATE.ERROR) {
-      // todo: handle an error
-      // todo: add error log
+    if(this.#newsInfo === undefined){
+      Logger.error("News infomation is undefined.");
       return;
     }
-
-    this.#state = SERVER_CONST.STATE.COLLECTING;
 
     for(var urlInfo of this.#newsInfo.urls) {
       await this.startSingle(urlInfo);
@@ -127,40 +122,7 @@ class Collector {
   }
 
   async stop() {
-    if(this.#state === SERVER_CONST.STATE.ERROR) {
-      // todo: handle an error
-      // todo: add error log
-      // todo: do some manual handling
-      return;
-    }
-    this.#state = SERVER_CONST.STATE.SLEEP;
-  }
-
-}
-
-class HeadlessBrowserManager {
-  #browser
-  constructor(){
-    this.#browser = undefined;
-  }
-  async terminate(){
-    browser.close();
-  }
-  
-  async moveURL(url, opt={
-    timeout: 0,
-    waitUntil: ['domcontentloaded']
-  }) {
-    if(this.#browser === undefined) {
-      this.#browser = await puppeteer.launch();
-    }
-
-    var page = await this.#browser.newPage();
-
-    // go to url
-    await page.goto(url, opt);
-
-    return page;
+    
   }
 
 }
