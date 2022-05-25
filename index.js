@@ -6,8 +6,8 @@ const fs = require('fs');
 const Collector = require('./server/Collector');
 const SERVER_CONST = require('./server/constant');
 
-const Logger = require('./Logger');
-const { LOG_TYPE } = require('./Logger');
+const Logger = require('./logger');
+const { LOG_TYPE } = require('./logger');
 
 var targetNewsPath = process.argv[2]; // todo: make this const
 var globalConfigFilePath = process.argv[3]; // todo: make this const

@@ -3,7 +3,7 @@ const puppeteer = require('puppeteer');
 const ParserPuppeteer = require('./Parser').ParserPuppeteer;
 const NewsTopicDatabase = require('./NewsTopicDatabase').NewsTopicDatabase;
 
-const Logger = require('../Logger');
+const Logger = require('../logger');
 
 class Collector {
   #browser  
