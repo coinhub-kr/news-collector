@@ -1,0 +1,56 @@
+{
+    "newsChannelName": "coindeskkorea",
+    "use": false,
+    "urls": [
+        {
+            "url": "https://www.coindeskkorea.com/",
+            "used": true,
+            "newsItemListIdentifier": {
+                "xpath": "//*[@id=\"moreList\"]/li",
+                "selector": "#moreList > li"
+            },
+            "target": [
+                {
+                    "name": "point",
+                    "use": false,
+                    "identifier": {
+                        "xpath": "",
+                        "selector": ""
+                    }
+                },
+                {
+                    "name": "headline",
+                    "use": true,
+                    "identifier": {
+                        "xpath": "./div/span/a[2]/strong",
+                        "selector": "div > span > a:nth-child(2) > strong"
+                    }
+                },
+                {
+                    "name": "summary",
+                    "use": true,
+                    "identifier": {
+                        "xpath": "./div/span/a[2]/span[1]",
+                        "selector": ""
+                    }
+                },
+            {
+                    "name": "date",
+                    "use": true,
+                    "identifier": {
+                        "xpath": "./div/span/a[2]/span[2]",
+                        "selector": ""
+                    }
+                },
+            {
+                    "name": "link",
+                    "use": true,
+                    "identifier": {
+                        "xpath": "./div/span/a[2]",
+                        "selector": ""
+                    }
+                }
+            ]
+        }
+    ]
+}

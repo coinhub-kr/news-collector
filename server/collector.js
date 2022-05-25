@@ -1,9 +1,7 @@
 const SERVER_CONST = require('./constant');
 const puppeteer = require('puppeteer');
 const ParserPuppeteer = require('./Parser').ParserPuppeteer;
-const NewsTopicDatabase = require('./NewsTopicDatabase').NewsTopicDatabase;
-
-const Logger = require('../logger');
+const DatabaseManager = require('./news-topic-database');
 
 class Collector {
   #browser  
@@ -20,7 +18,7 @@ class Collector {
     this.#newsInfo = undefined;
     this.#currentPage = undefined;
     
-    this.#browser = await puppeteer.launch();
+    this.#browser = undefined;
 
     this.#parser = new ParserPuppeteer();
 
@@ -48,10 +46,19 @@ class Collector {
    * @returns {boolean} succeed or not
    */
   async startSingle(urlInfo){
+    // db connection
+    DatabaseManager.connect();
+
     if(!this.#validURL(urlInfo.url)) {
       Logger.error(`Found invalid url('${urlInfo.url}').`);
       return false;
     }
+
+    // create browser once
+    if(this.#browser === undefined) {
+      this.#browser = await puppeteer.launch();
+    }
+    
 
     Logger.info(`Access to ${urlInfo.url}.`);
 
@@ -102,8 +109,7 @@ class Collector {
     
     Logger.info(`${urlInfo.url}: Save ${gettingValueList.length} item(s) to DB.`);
 
-    var newsTopicDatabase = new NewsTopicDatabase();
-    newsTopicDatabase.save(gettingValueList);
+    DatabaseManager.save(gettingValueList);
 
     return true;
   }

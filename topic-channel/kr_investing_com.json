@@ -1,0 +1,56 @@
+{
+    "newsChannelName": "kr.investing.com",
+    "use": true,
+    "urls": [
+        {
+            "url": "https://kr.investing.com/news/cryptocurrency-news",
+            "used": true,
+            "newsItemListIdentifier": {
+                "xpath": "//*[@id=\"leftColumn\"]/div[4]/article",
+                "selector": "#leftColumn > div.largeTitle > article"
+            },
+            "target": [
+                {
+                    "name": "point",
+                    "use": false,
+                    "identifier": {
+                        "xpath": "",
+                        "selector": ""
+                    }
+                },
+                {
+                    "name": "headline",
+                    "use": true,
+                    "identifier": {
+                        "xpath": "./div[1]/a",
+                        "selector": ""
+                    }
+                },
+                {
+                    "name": "summary",
+                    "use": true,
+                    "identifier": {
+                        "xpath": "./div[1]/p",
+                        "selector": ""
+                    }
+                },
+            {
+                    "name": "date",
+                    "use": true,
+                    "identifier": {
+                        "xpath": "./div[1]/span/span[2]",
+                        "selector": ""
+                    }
+                },
+            {
+                    "name": "link",
+                    "use": true,
+                    "identifier": {
+                        "xpath": "./a",
+                        "selector": ""
+                    }
+                }
+            ]
+        }
+    ]
+}
