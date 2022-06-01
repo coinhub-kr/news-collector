@@ -1,7 +1,9 @@
 const SERVER_CONST = require('./constant');
 const puppeteer = require('puppeteer');
 const ParserPuppeteer = require('./Parser').ParserPuppeteer;
-const DatabaseManager = require('./news-topic-database');
+const databaseManager = require('./news-topic-database');
+const customParser = require('../parser/custom-parser');
+const Logger = require('../env/logger');
 
 class Collector {
   #browser  
@@ -46,9 +48,6 @@ class Collector {
    * @returns {boolean} succeed or not
    */
   async startSingle(urlInfo){
-    // db connection
-    DatabaseManager.connect();
-
     if(!this.#validURL(urlInfo.url)) {
       Logger.error(`Found invalid url('${urlInfo.url}').`);
       return false;
@@ -59,18 +58,16 @@ class Collector {
       this.#browser = await puppeteer.launch();
     }
     
-
     Logger.info(`Access to ${urlInfo.url}.`);
 
     this.#currentPage = await this.#browser.newPage();
 
     // go to url
-    await this.#currentPage.goto(urlInfo.url, {
+    var response = await this.#currentPage.goto(urlInfo.url, {
       timeout: 0,
       waitUntil: ['domcontentloaded']
     });
-
-    var response = Promise.resolve(this.#currentPage);
+    
     if(!response.ok()){
       Logger.error(`The url('${urlInfo.url}') seems not to exist anymore.`);
       return false;
@@ -81,35 +78,41 @@ class Collector {
     var gettingValueList = [];
     var nameList = [];
 
-    Logger.info(`${urlInfo.newsChannelName}: Found ${newsItemList.length} item(s).`);
+    Logger.info(`${urlInfo.url}: Found ${newsItemList.length} item(s).`);
     for(var newsItemElem of newsItemList) {
       var newsData = {};
       for(var targetData of urlInfo.target) {
         if(targetData.use) {
-          if(targetData.name === "link") {
-            newsData[targetData.name] = await this.#parser.parseElementValue(this.#currentPage, targetData.identifier, newsItemElem, (element) => {
-              return element.href;
-            });
-          } else {
-            var targetValue = await this.#parser.parseElementValue(this.#currentPage, targetData.identifier, newsItemElem);
-          
-            nameList.push(targetData.name);
-            
-            if(targetValue) {
-              newsData[targetData.name] = targetValue;
+          try {
+            if(targetData.name === "link") {
+              newsData[targetData.name] = await this.#parser.parseElementValue(this.#currentPage, targetData.identifier, newsItemElem, (element) => {
+                return element.href;
+              });
             } else {
-              // todo: warning: no value on the element
+              var targetValue = await this.#parser.parseElementValue(this.#currentPage, targetData.identifier, newsItemElem);
+            
+              nameList.push(targetData.name);
+              
+              if(targetValue) {
+                newsData[targetData.name] = targetValue;
+              } else {
+                newsData[targetData.name] = '';
+              }
             }
+          } catch(e){
+            // console.log(e);
+            Logger.error(`Cannot found element on '${targetData.name}'.`);
+            continue;
           }
         }
       }
       Logger.info(`${urlInfo.url}: Parsed ${newsData['headline']}.`);
       gettingValueList.push(newsData);
     }
-    
+    customParser.postParser(urlInfo.url, gettingValueList);
     Logger.info(`${urlInfo.url}: Save ${gettingValueList.length} item(s) to DB.`);
 
-    DatabaseManager.save(gettingValueList);
+    databaseManager.save(gettingValueList);
 
     return true;
   }
@@ -128,7 +131,11 @@ class Collector {
   }
 
   async stop() {
-    
+    Logger.info('Stopping news collector...');
+    this.#browser.close();
+    setTimeout(()=> {
+      databaseManager.disconnect();
+    }, 20000);
   }
 
 }
