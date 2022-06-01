@@ -1,14 +1,11 @@
 {
-    "collector":{
-        "interval": 10000,
-        "__description": "300000"
-    },
     "log": {
         "path": "./log/app.log"
     },
     "mongodb": {
         "host": "localhost",
         "port": 27017,
-        "cluster": "test"
+        "cluster": "coinhub-news",
+        "collection": "news"
     }
 }

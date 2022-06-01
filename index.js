@@ -48,7 +48,6 @@ const Collector = require('./server/collector');
 const SERVER_CONST = require('./server/constant');
 
 var collector = new Collector();
-var collectorIntervalId = undefined;
 
 function main(newsInfo){
   Logger.setLogPath(config.log.path);
@@ -58,13 +57,7 @@ function main(newsInfo){
     
     collector.setNewsInfo(newsInfo);
 
-    collectorIntervalId = setInterval(() => {
-      if(collector !== undefined) {
-        clearInterval(collectorIntervalId);
-      }
-      
-      collector.start();
-    }, config.collector.interval);
+    collector.start();
   } else {
     Logger.info("No news exist to be collected.");
   }

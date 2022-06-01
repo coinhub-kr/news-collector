@@ -7,7 +7,7 @@ mongoose.connect(`mongodb://${global.config.mongodb.host}:${global.config.mongod
 var mongodb = undefined;
 var newsCollection = undefined;
 
-var DatabaseManager = {
+var databaseManager = {
     connect: function(){
         mongodb = mongoose.connection;
 
@@ -16,8 +16,12 @@ var DatabaseManager = {
         });
         mongodb.once('open', function() {
             Logger.info(`Connected to database.`);
-            newsCollection = mongodb.collection('news');
+            newsCollection = mongodb.collection(global.config.mongodb.collection);
         });
+    },
+    disconnect: function(){
+        Logger.info('Disconnecting mongodb...');
+        mongoose.disconnect();
     },
     save(parsedNewsList = []){
         if(newsCollection === undefined) {
@@ -25,7 +29,6 @@ var DatabaseManager = {
             return false;
         }
 
-        var savedCount = 0;
         for(var newsItem of parsedNewsList) {
             newsCollection.findOneAndUpdate(
                 newsItem, 
@@ -57,15 +60,13 @@ var DatabaseManager = {
                             ok: 1
                         }
                      */
-                    // console.log(data)
                     if(error) {
                         Logger.error(error.message);
                     } else {
                         if(data.lastErrorObject.updatedExisting) {
                             Logger.info(`News already exist: ${data.value['headline']}`);
                         } else {
-                            savedCount += 1;
-                            Logger.info(`Saved successfully: ${data.lastErrorObject.upserted}`);
+                            Logger.info(`Successfully saved on id('${data.lastErrorObject.upserted}')`);
                         }
                     }
                 }
@@ -75,5 +76,5 @@ var DatabaseManager = {
         return true;
     }
 }
-
-module.exports = DatabaseManager;
+databaseManager.connect();
+module.exports = databaseManager;

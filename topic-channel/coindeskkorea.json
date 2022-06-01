@@ -1,6 +1,6 @@
 {
     "newsChannelName": "coindeskkorea",
-    "use": false,
+    "use": true,
     "urls": [
         {
             "url": "https://www.coindeskkorea.com/",
@@ -34,15 +34,15 @@
                         "selector": ""
                     }
                 },
-            {
-                    "name": "date",
+                {
+                    "name": "author&date",
                     "use": true,
                     "identifier": {
                         "xpath": "./div/span/a[2]/span[2]",
                         "selector": ""
                     }
                 },
-            {
+                {
                     "name": "link",
                     "use": true,
                     "identifier": {
