@@ -1,12 +1,9 @@
-// puppeteer API : https://pptr.dev/#?product=Puppeteer&version=v12.0.0
-//
-const puppeteer = require('puppeteer');
-
 const process = require('process');
 const fs = require('fs');
-require('./env/logger');
 
+require('./env/logger');
 const ConfigManager = require('./env/config');
+const Collector = require('./server/collector');
 
 var targetNewsPath = process.argv[2]; // todo: make this const
 const CONFIG_FILE_PATH = "./conf/config.json";
@@ -15,12 +12,6 @@ const CONFIG_FILE_PATH = "./conf/config.json";
 targetNewsPath = "./topic-channel/coindeskkorea.json";
 targetNewsPath = "./topic-channel/kr_investing_com.json";
 // [debug] end
-
-// load config file
-if(!ConfigManager.load(CONFIG_FILE_PATH)) {
-  process.exit(0);
-}
-global.config = ConfigManager.config;
 
 /**
  * Coding convention
@@ -41,17 +32,20 @@ global.config = ConfigManager.config;
  *   
  * }
  */
+// load config file
+if(!ConfigManager.load(CONFIG_FILE_PATH)) {
+  process.exit(0);
+}
+global.config = ConfigManager.config;
+
 const newsInfo = JSON.parse(fs.readFileSync(targetNewsPath, 'utf8'));
-
-const Collector = require('./server/collector');
-const SERVER_CONST = require('./server/constant');
-
-var collector = new Collector();
 
 function main(newsInfo){
   if(newsInfo.use) {
     Logger.info(`Target channel: ${newsInfo.newsChannelName}`);
     
+    var collector = new Collector();
+
     collector.setNewsInfo(newsInfo);
 
     collector.start();
