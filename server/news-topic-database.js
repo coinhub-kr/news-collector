@@ -1,8 +1,15 @@
 var mongoose = require('mongoose');
-const Logger = require('../env/logger');
 
 // console.log(global);
-mongoose.connect(`mongodb://${global.config.mongodb.host}:${global.config.mongodb.port}/${global.config.mongodb.cluster}`);
+mongoose.connect(
+    `mongodb://${global.config.mongodb.host}:${global.config.mongodb.port}/${global.config.mongodb.cluster}`,
+    {
+        user: global.config.mongodb.user,
+        pass: global.config.mongodb.pass,
+        authSource: global.config.mongodb.authSource,
+        authMechanism: global.config.mongodb.authMechanism
+    }
+);
 
 var mongodb = undefined;
 var newsCollection = undefined;

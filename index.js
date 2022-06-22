@@ -4,8 +4,8 @@ const puppeteer = require('puppeteer');
 
 const process = require('process');
 const fs = require('fs');
+require('./env/logger');
 
-const Logger = require('./env/logger');
 const ConfigManager = require('./env/config');
 
 var targetNewsPath = process.argv[2]; // todo: make this const
@@ -21,7 +21,6 @@ if(!ConfigManager.load(CONFIG_FILE_PATH)) {
   process.exit(0);
 }
 global.config = ConfigManager.config;
-global.Logger = Logger;
 
 /**
  * Coding convention
@@ -50,8 +49,6 @@ const SERVER_CONST = require('./server/constant');
 var collector = new Collector();
 
 function main(newsInfo){
-  Logger.setLogPath(config.log.path);
-
   if(newsInfo.use) {
     Logger.info(`Target channel: ${newsInfo.newsChannelName}`);
     

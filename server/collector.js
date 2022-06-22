@@ -3,7 +3,6 @@ const puppeteer = require('puppeteer');
 const ParserPuppeteer = require('./Parser').ParserPuppeteer;
 const databaseManager = require('./news-topic-database');
 const customParser = require('../parser/custom-parser');
-const Logger = require('../env/logger');
 
 class Collector {
   #browser  
