@@ -4,8 +4,13 @@
     },
     "mongodb": {
         "host": "localhost",
-        "port": 27017,
+        "port": 4004,
         "cluster": "coinhub-news",
-        "collection": "news"
+        "collection": "news",
+        "options": {
+            "readPreference": "primary",
+            "directConnection": true,
+            "ssl": false
+        }
     }
 }

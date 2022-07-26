@@ -1,4 +1,3 @@
-const SERVER_CONST = require('./constant'); 
 const puppeteer = require('puppeteer'); // puppeteer API : https://pptr.dev/#?product=Puppeteer&version=v12.0.0
 const ParserPuppeteer = require('./Parser').ParserPuppeteer;
 const databaseManager = require('./news-topic-database');
@@ -79,7 +78,9 @@ class Collector {
 
     Logger.info(`${urlInfo.url}: Found ${newsItemList.length} item(s).`);
     for(var newsItemElem of newsItemList) {
-      var newsData = {};
+      var newsData = {
+        'parsed-from': urlInfo.url
+      };
 
       // start to parsing
       for(var targetData of urlInfo.target) {

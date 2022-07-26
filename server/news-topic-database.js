@@ -3,12 +3,13 @@ var mongoose = require('mongoose');
 // console.log(global);
 mongoose.connect(
     `mongodb://${global.config.mongodb.host}:${global.config.mongodb.port}/${global.config.mongodb.cluster}`,
-    {
-        user: global.config.mongodb.user,
-        pass: global.config.mongodb.pass,
-        authSource: global.config.mongodb.authSource,
-        authMechanism: global.config.mongodb.authMechanism
-    }
+    global.config.mongodb.options
+    // {
+    //     user: global.config.mongodb.user,
+    //     pass: global.config.mongodb.pass,
+    //     authSource: global.config.mongodb.authSource,
+    //     authMechanism: global.config.mongodb.authMechanism
+    // }
 );
 
 var mongodb = undefined;
