@@ -1,6 +1,7 @@
 # Contact
 Byung Hyun An(anb, coloredrabbit)
 adh0463@gmail.com
+Team) coin-hub.
 
 # Setting environments
  - nodejs
@@ -9,7 +10,17 @@ adh0463@gmail.com
  - puppeteer
   npm i puppeteer@12.0.0
 
-# config.json
+# How to run
+```sh
+node index.js {news channel config file path}
+```
+## example
+```sh
+node index.js ./my_news_channel.json
+```
+
+# Collector configuration JSON format
+```json
 {
     "log": {
         "path": {string, A file path saved to}
@@ -21,8 +32,10 @@ adh0463@gmail.com
         "collection": {string, mongodb collection}
     }
 }
+```
 
-# Parsing rule
+# News channel JSON format
+```json
 {
   "newsChannelName": {string, },
   "use": {boolean},
@@ -47,3 +60,4 @@ adh0463@gmail.com
     }
   ]
 }
+```
