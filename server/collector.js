@@ -1,9 +1,7 @@
-const SERVER_CONST = require('./constant');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer'); // puppeteer API : https://pptr.dev/#?product=Puppeteer&version=v12.0.0
 const ParserPuppeteer = require('./Parser').ParserPuppeteer;
 const databaseManager = require('./news-topic-database');
 const customParser = require('../parser/custom-parser');
-const Logger = require('../env/logger');
 
 class Collector {
   #browser  
@@ -12,7 +10,6 @@ class Collector {
   #newsInfo
   #parser
 
-  #lastError
   /**
    * 
    */
@@ -73,6 +70,7 @@ class Collector {
       return false;
     }
 
+    // get news items on css selector or xpath
     var newsItemList = await this.#parser.resolveElementIdentifier(this.#currentPage, urlInfo.newsItemListIdentifier);
     
     var gettingValueList = [];
@@ -80,7 +78,11 @@ class Collector {
 
     Logger.info(`${urlInfo.url}: Found ${newsItemList.length} item(s).`);
     for(var newsItemElem of newsItemList) {
-      var newsData = {};
+      var newsData = {
+        'parsed-from': urlInfo.url
+      };
+
+      // start to parsing
       for(var targetData of urlInfo.target) {
         if(targetData.use) {
           try {
@@ -100,7 +102,6 @@ class Collector {
               }
             }
           } catch(e){
-            // console.log(e);
             Logger.error(`Cannot found element on '${targetData.name}'.`);
             continue;
           }

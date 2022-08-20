@@ -1,34 +1,44 @@
-const fs = require('fs');
-const LOG_TYPE = {
-    DEBUG: "debug",
-    INFO: "info",
-    ERROR: "error"
-};
+const winston = require('winston');
+const winstonDaily = require('winston-daily-rotate-file');
 
-var Logger = {
-    logPath: undefined,
-    setLogPath: function(path){
-        Logger.logPath = path;
-    },
-    log: function(logType, message){
-        var timestamp = new Date().toISOString();
-    
-        var log_content = `${timestamp} [${logType}] ${message}`;
+const logDirectoryPath = './logs'; 
+const errorLogDirectoryPath = `${logDirectoryPath}/error`;
 
-        if(Logger.logPath !== undefined) {
-            fs.appendFile(Logger.logPath, log_content, () => {});
-        }
-        console.log(log_content);
-    },    
-    debug: function(message){
-        Logger.log(LOG_TYPE.DEBUG, message);
-    },
-    info: function(message){
-        Logger.log(LOG_TYPE.INFO, message);
-    },
-    error: function(message){
-        Logger.log(LOG_TYPE.ERROR, message);
-    }
-};
+// Define log format
+const logFormat = winston.format.printf(info => {
+  return `${info.timestamp} ${info.level}: ${info.message}`;
+});
 
-module.exports = Logger;
+/*
+ * Log Level
+ * error: 0, warn: 1, info: 2, http: 3, verbose: 4, debug: 5, silly: 6
+ */
+const logger = winston.createLogger({
+  format: winston.format.combine(
+    winston.format.timestamp({
+      format: 'YYYY-MM-DD HH:mm:ss',
+    }),
+    logFormat
+  ),
+  transports: [
+    new winstonDaily({
+      level: 'info',
+      datePattern: 'YYYY.MM.DD',
+      dirname: logDirectoryPath,
+      filename: `coinhub_collector_%DATE%.log`,
+      maxFiles: 7,
+      zippedArchive: true,
+    }),
+    new winstonDaily({
+      level: 'error',
+      datePattern: 'YYYY.MM.DD',
+      dirname: errorLogDirectoryPath,
+      filename: `coinhub_collector_error_%DATE%.log`,
+      maxFiles: 7,
+      zippedArchive: true
+    })
+  ]
+});
+
+global.Logger = logger;
+module.export = {};

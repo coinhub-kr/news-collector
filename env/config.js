@@ -1,5 +1,4 @@
 const fs = require('fs');
-const Logger = require('./logger');
 
 var ConfigManager = {
     config: {},
