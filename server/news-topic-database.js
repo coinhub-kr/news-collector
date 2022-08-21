@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 
 // console.log(global);
 mongoose.connect(
-    `mongodb://${global.config.mongodb.host}:${global.config.mongodb.port}/${global.config.mongodb.cluster}`,
+    `${global.MONGO_URL}`,
     global.config.mongodb.options
     // {
     //     user: global.config.mongodb.user,
@@ -24,7 +24,7 @@ var databaseManager = {
         });
         mongodb.once('open', function() {
             Logger.info(`Connected to database.`);
-            newsCollection = mongodb.collection(global.config.mongodb.collection);
+            newsCollection = mongodb.collection(global.MONGO_COLLECTION);
         });
     },
     disconnect: function(){

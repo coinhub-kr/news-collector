@@ -10,6 +10,12 @@ if(!ConfigManager.load(CONFIG_FILE_PATH)) {
   process.exit(0);
 }
 global.config = ConfigManager.config;
+global.MONGO_URL = process.env.MONGO_URL || `mongodb://${global.config.mongodb.host}:${global.config.mongodb.port}/${global.config.mongodb.db}`;
+global.MONGO_DB = process.env.MONGO_DB || global.config.mongodb.db;
+global.MONGO_COLLECTION = process.env.MONGO_COLLECTION || global.config.mongodb.collection;
+global.config.mongodb.options.user = process.env.MONGO_USER || global.config.mongodb.options.user;
+global.config.mongodb.options.pass = process.env.MONGO_PASS || global.config.mongodb.options.pass;
+
 console.log(global.config);
 
 const Collector = require('./server/collector');
