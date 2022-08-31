@@ -52,7 +52,12 @@ class Collector {
 
     // create browser once
     if(this.#browser === undefined) {
-      this.#browser = await puppeteer.launch();
+      this.#browser = await puppeteer.launch({
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox'
+        ]
+      });
     }
     
     Logger.info(`Access to ${urlInfo.url}.`);
