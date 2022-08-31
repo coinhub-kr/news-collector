@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer'); // puppeteer API : https://pptr.dev/#?product=Puppeteer&version=v12.0.0
-const ParserPuppeteer = require('./Parser').ParserPuppeteer;
+const ParserPuppeteer = require('./parser').ParserPuppeteer;
 const databaseManager = require('./news-topic-database');
 const customParser = require('../parser/custom-parser');
 
